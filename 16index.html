@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مدينة تفاعلية باللمس</title>
+
+<style>
+body{
+margin:0;
+background:#000;
+color:white;
+font-family:tahoma;
+text-align:center;
+}
+
+#ui{
+padding:8px;
+background:#111;
+display:flex;
+justify-content:space-around;
+}
+
+canvas{
+background:#2b2b2b;
+display:block;
+margin:auto;
+}
+
+#controls{
+margin-top:10px;
+display:grid;
+grid-template-columns:60px 60px 60px;
+grid-template-rows:60px 60px;
+gap:8px;
+justify-content:center;
+}
+
+.btn{
+background:#444;
+color:white;
+font-size:24px;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+user-select:none;
+}
+.btn:active{background:#777;}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+<div>💰 <span id="money">0</span></div>
+<div>🎯 الهدف: 100</div>
+</div>
+
+<canvas id="game" width="360" height="420"></canvas>
+
+<div id="controls">
+<div></div>
+<div class="btn" ontouchstart="move='up'" ontouchend="move=''">⬆️</div>
+<div></div>
+<div class="btn" ontouchstart="move='left'" ontouchend="move=''">⬅️</div>
+<div class="btn" ontouchstart="move='down'" ontouchend="move=''">⬇️</div>
+<div class="btn" ontouchstart="move='right'" ontouchend="move=''">➡️</div>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+let money=0;
+let move="";
+
+const player={x:170,y:350,w:22,h:22,speed:2.5};
+const coins=[];
+
+function spawnCoin(){
+coins.push({
+x:Math.random()*330+10,
+y:Math.random()*380+10,
+r:6
+});
+}
+setInterval(spawnCoin,1200);
+
+function update(){
+if(move==="left") player.x-=player.speed;
+if(move==="right") player.x+=player.speed;
+if(move==="up") player.y-=player.speed;
+if(move==="down") player.y+=player.speed;
+
+player.x=Math.max(0,Math.min(canvas.width-player.w,player.x));
+player.y=Math.max(0,Math.min(canvas.height-player.h,player.y));
+
+coins.forEach((c,i)=>{
+let dx=player.x-c.x;
+let dy=player.y-c.y;
+if(Math.sqrt(dx*dx+dy*dy)<15){
+money+=10;
+coins.splice(i,1);
+}
+});
+}
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+// player
+ctx.fillStyle="lime";
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+// coins
+ctx.fillStyle="gold";
+coins.forEach(c=>{
+ctx.beginPath();
+ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
+ctx.fill();
+});
+
+document.getElementById("money").innerText=money;
+}
+
+function loop(){
+update();
+draw();
+requestAnimationFrame(loop);
+}
+loop();
+</script>
+
+</body>
+</html>
